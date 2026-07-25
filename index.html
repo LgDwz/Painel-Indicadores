@@ -1559,13 +1559,25 @@ function computeIndicatorsFromRaw(consolidadoRows, cqRows, liderRows, historicoE
       const pareceContrato = /^\d+$/.test(primeiraColA);
       if(!pareceContrato) start = 1;
     }
+
+    // Checagem de segurança: confere se conseguimos ler ALGUMA data válida na coluna C do CQ.
+    // Se não conseguirmos nenhuma (formato de data diferente do esperado), desativa o filtro de mês
+    // em vez de zerar o CQ de todo mundo por engano.
+    let algumaDataReconhecida = false;
+    for(let i = start; i < cqRows.length; i++){
+      if(parseDateSafeSite(cqRows[i][2])){ algumaDataReconhecida = true; break; }
+    }
+    const usarFiltroDeMes = mesVigente && algumaDataReconhecida;
+    if(mesVigente && !algumaDataReconhecida){
+      console.warn('CQ: não consegui reconhecer nenhuma data na coluna C — filtro de mês desativado pra essa importação (contando todo o histórico de CQ).');
+    }
+
     for(let i = start; i < cqRows.length; i++){
       const row = cqRows[i];
       const nome = String(row[3]||'').trim();
       const contrato = String(row[0]||'').trim();
       if(!nome || !isRealTecnicoSite(nome) || !contrato) continue;
-      // Filtra pelo mês vigente (coluna C = DATA), se conseguirmos identificar o mês
-      if(mesVigente){
+      if(usarFiltroDeMes){
         const dataCQ = parseDateSafeSite(row[2]);
         if(!dataCQ) continue;
         const chaveCQ = dataCQ.getFullYear()+'-'+String(dataCQ.getMonth()+1).padStart(2,'0');
