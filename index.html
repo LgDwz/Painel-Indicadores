@@ -1126,10 +1126,10 @@ const RODIZIO_DATA_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR4mE5
 
 /* ---- Fontes de dados BRUTOS (Consolidado, CQ, Líder) — o site calcula tudo sozinho a partir daqui ---- */
 const RAW_CONSOLIDADO_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR4mE54QysVssxQ-krzAPVA9fCCmPs4QigvpxAwS6P5bl3oDuKnUdZRBu0vQ-ypcCCJ2EHk-iNd303j/pub?gid=1409951506&single=true&output=csv";
-const RAW_CQ_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR4mE54QysVssxQ-krzAPVA9fCCmPs4QigvpxAwS6P5bl3oDuKnUdZRBu0vQ-ypcCCJ2EHk-iNd303j/pub?gid=997142980&single=true&output=csv";
+const RAW_CQ_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR4mE54QysVssxQ-krzAPVA9fCCmPs4QigvpxAwS6P5bl3oDuKnUdZRBu0vQ-ypcCCJ2EHk-iNd303j/pub?gid=1403067051&single=true&output=csv";
 // TODO: trocar pelos links reais assim que forem publicados
-const RAW_REVISITA_ATIVACAO_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR4mE54QysVssxQ-krzAPVA9fCCmPs4QigvpxAwS6P5bl3oDuKnUdZRBu0vQ-ypcCCJ2EHk-iNd303j/pub?gid=746440460&single=true&output=csv";
-const RAW_REVISITA_REPARO_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR4mE54QysVssxQ-krzAPVA9fCCmPs4QigvpxAwS6P5bl3oDuKnUdZRBu0vQ-ypcCCJ2EHk-iNd303j/pub?gid=1403067051&single=true&output=csv";
+const RAW_REVISITA_ATIVACAO_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR4mE54QysVssxQ-krzAPVA9fCCmPs4QigvpxAwS6P5bl3oDuKnUdZRBu0vQ-ypcCCJ2EHk-iNd303j/pub?gid=0&single=true&output=csv";
+const RAW_REVISITA_REPARO_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR4mE54QysVssxQ-krzAPVA9fCCmPs4QigvpxAwS6P5bl3oDuKnUdZRBu0vQ-ypcCCJ2EHk-iNd303j/pub?gid=746440460&single=true&output=csv";
 const RAW_LIDER_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR4mE54QysVssxQ-krzAPVA9fCCmPs4QigvpxAwS6P5bl3oDuKnUdZRBu0vQ-ypcCCJ2EHk-iNd303j/pub?gid=831107252&single=true&output=csv";
 const NPS_FIXO_SITE = 0.70;
 
@@ -2413,14 +2413,26 @@ function adminTechDetailHTML(t){
     const s = indStatus(val, d);
     const ratio = indRatio(val, d);
     let detalhesHTML = '';
-    if(d.key === 'revisita_ativacao') detalhesHTML = revisitaDetalhesHTML(t.revisitasAtivacaoDetalhes, 'revisita-ativ-'+t.slug);
-    if(d.key === 'revisita_reparo') detalhesHTML = revisitaDetalhesHTML(t.revisitasReparoDetalhes, 'revisita-rep-'+t.slug);
+    let comparacaoHTML = '';
+    if(d.key === 'revisita_ativacao'){
+      detalhesHTML = revisitaDetalhesHTML(t.revisitasAtivacaoDetalhes, 'revisita-ativ-'+t.slug);
+      if(t.revisita_ativacao_auto !== undefined && t.revisita_ativacao_auto !== null){
+        comparacaoHTML = `<div style="font-size:11px;color:var(--text-mute);margin:-4px 0 8px;">Cálculo automático (comparação): ${fmtPct(t.revisita_ativacao_auto)}</div>`;
+      }
+    }
+    if(d.key === 'revisita_reparo'){
+      detalhesHTML = revisitaDetalhesHTML(t.revisitasReparoDetalhes, 'revisita-rep-'+t.slug);
+      if(t.revisita_reparo_auto !== undefined && t.revisita_reparo_auto !== null){
+        comparacaoHTML = `<div style="font-size:11px;color:var(--text-mute);margin:-4px 0 8px;">Cálculo automático (comparação): ${fmtPct(t.revisita_reparo_auto)}</div>`;
+      }
+    }
     return `
       <div class="ind-row">
         <span class="iname">${d.label}</span>
         <span class="ival">${d.fmt(val)} <span class="meta-note">/ meta ${metaLabel(d)}</span>${s?`<span class="status-dot ${s}"></span>`:''}</span>
       </div>
       <div class="ind-bar-track"><div class="ind-bar-fill ${s||''}" style="width:${(ratio*100).toFixed(0)}%"></div></div>
+      ${comparacaoHTML}
       ${detalhesHTML}
     `;
   }).join('');
@@ -2995,11 +3007,11 @@ async function fetchCsvRows(url){
   }
 }
 
-async function fetchCsvRowsComRetry(url, tentativas=2){
+async function fetchCsvRowsComRetry(url, tentativas=4){
   for(let i=0; i<tentativas; i++){
     const rows = await fetchCsvRows(url);
     if(rows && rows.length > 0) return rows;
-    if(i < tentativas-1){ await new Promise(r=>setTimeout(r, 1000)); } // espera 1s antes de tentar de novo
+    if(i < tentativas-1){ await new Promise(r=>setTimeout(r, 1500)); } // espera 1,5s antes de tentar de novo
   }
   return [];
 }
@@ -3035,11 +3047,10 @@ async function handleImportConsolidado(file){
     btn.textContent = '📥 Buscando histórico de revisitas...';
     const historicoExtra = await loadRevisitaHistorico();
 
-    btn.textContent = '📥 Buscando revisitas manuais...';
-    const [revisitaAtivRows, revisitaRepRows] = await Promise.all([
-      RAW_REVISITA_ATIVACAO_URL ? fetchCsvRowsComRetry(RAW_REVISITA_ATIVACAO_URL) : Promise.resolve([]),
-      RAW_REVISITA_REPARO_URL ? fetchCsvRowsComRetry(RAW_REVISITA_REPARO_URL) : Promise.resolve([])
-    ]);
+    btn.textContent = '📥 Buscando revisita ativação (manual)...';
+    const revisitaAtivRows = RAW_REVISITA_ATIVACAO_URL ? await fetchCsvRowsComRetry(RAW_REVISITA_ATIVACAO_URL) : [];
+    btn.textContent = '📥 Buscando revisita reparo (manual)...';
+    const revisitaRepRows = RAW_REVISITA_REPARO_URL ? await fetchCsvRowsComRetry(RAW_REVISITA_REPARO_URL) : [];
     const mapaRevisitaAtiv = buildManualRevisitaMap(revisitaAtivRows);
     const mapaRevisitaRep = buildManualRevisitaMap(revisitaRepRows);
 
@@ -3055,16 +3066,16 @@ async function handleImportConsolidado(file){
       throw new Error('Nenhum técnico processado. Confira se o arquivo tem as colunas esperadas (Recurso, Status da Atividade, Tipo de Atividade, etc.).');
     }
 
-    // Sobrescreve a revisita calculada automaticamente pelo valor manual da planilha (quando disponível).
-    // O cálculo automático continua rodando por baixo dos panos (usado no histórico), só não aparece na tela.
+    // Sobrescreve a revisita calculada automaticamente pelo valor manual da planilha (quando disponível),
+    // mas guarda o valor automático à parte, pra dar pra comparar os dois na tela.
     tecnicosCalculados.forEach(t=>{
       if(mapaRevisitaAtiv.hasOwnProperty(t.nome)){
+        t.revisita_ativacao_auto = t.revisita_ativacao;
         t.revisita_ativacao = mapaRevisitaAtiv[t.nome];
-        t.revisitasAtivacaoDetalhes = [];
       }
       if(mapaRevisitaRep.hasOwnProperty(t.nome)){
+        t.revisita_reparo_auto = t.revisita_reparo;
         t.revisita_reparo = mapaRevisitaRep[t.nome];
-        t.revisitasReparoDetalhes = [];
       }
     });
 
@@ -3631,14 +3642,26 @@ function enterDashboard(t){
     const s = indStatus(val, d);
     const ratio = indRatio(val, d);
     let detalhesHTML = '';
-    if(d.key === 'revisita_ativacao') detalhesHTML = revisitaDetalhesHTML(t.revisitasAtivacaoDetalhes, 'revisita-ativ-'+t.slug);
-    if(d.key === 'revisita_reparo') detalhesHTML = revisitaDetalhesHTML(t.revisitasReparoDetalhes, 'revisita-rep-'+t.slug);
+    let comparacaoHTML = '';
+    if(d.key === 'revisita_ativacao'){
+      detalhesHTML = revisitaDetalhesHTML(t.revisitasAtivacaoDetalhes, 'revisita-ativ-'+t.slug);
+      if(t.revisita_ativacao_auto !== undefined && t.revisita_ativacao_auto !== null){
+        comparacaoHTML = `<div style="font-size:11px;color:var(--text-mute);margin:-4px 0 8px;">Cálculo automático (comparação): ${fmtPct(t.revisita_ativacao_auto)}</div>`;
+      }
+    }
+    if(d.key === 'revisita_reparo'){
+      detalhesHTML = revisitaDetalhesHTML(t.revisitasReparoDetalhes, 'revisita-rep-'+t.slug);
+      if(t.revisita_reparo_auto !== undefined && t.revisita_reparo_auto !== null){
+        comparacaoHTML = `<div style="font-size:11px;color:var(--text-mute);margin:-4px 0 8px;">Cálculo automático (comparação): ${fmtPct(t.revisita_reparo_auto)}</div>`;
+      }
+    }
     return `
       <div class="ind-row">
         <span class="iname">${d.label}</span>
         <span class="ival">${d.fmt(val)} <span class="meta-note">/ meta ${metaLabel(d)}</span>${s?`<span class="status-dot ${s}"></span>`:''}</span>
       </div>
       <div class="ind-bar-track"><div class="ind-bar-fill ${s||''}" style="width:${(ratio*100).toFixed(0)}%"></div></div>
+      ${comparacaoHTML}
       ${detalhesHTML}
     `;
   }).join('');
