@@ -1430,7 +1430,7 @@ function computeIndicatorsFromRaw(consolidadoRows, cqRows, liderRows, historicoE
     const pop = iPop!==-1 ? String(row[iPop]||'').trim() : '';
     const dataProtocolo = iDataProtocolo!==-1 ? parseDateSafeSite(row[iDataProtocolo]) : null;
     const dataAgendada = iDataAgendada!==-1 ? parseDateSafeSite(row[iDataAgendada]) : null;
-    const dataRef = dataProtocolo || dataAgendada;
+    const dataRef = dataAgendada || dataProtocolo;
 
     let horaAtual = iInicioTermino!==-1 ? parseTimeMinutesSite(row[iInicioTermino]) : null;
     if(horaAtual===null && dataProtocolo){
@@ -1474,7 +1474,7 @@ function computeIndicatorsFromRaw(consolidadoRows, cqRows, liderRows, historicoE
     const solucaoFalha = iSolucaoFalha!==-1 ? String(row[iSolucaoFalha]||'').trim() : '';
     const dataProtocolo = iDataProtocolo!==-1 ? parseDateSafeSite(row[iDataProtocolo]) : null;
     const dataAgendada = iDataAgendada!==-1 ? parseDateSafeSite(row[iDataAgendada]) : null;
-    const dataRef = dataProtocolo || dataAgendada;
+    const dataRef = dataAgendada || dataProtocolo;
     if(nome && isRealTecnicoSite(nome) && status==='Concluída' && contrato && dataRef){
       if(!porContratoGeral[contrato]) porContratoGeral[contrato] = [];
       porContratoGeral[contrato].push({tecnico: nome, tipo, data: dataRef, solucaoFalha});
@@ -1533,17 +1533,47 @@ function computeIndicatorsFromRaw(consolidadoRows, cqRows, liderRows, historicoE
     });
   });
 
-  // ---- CQ (contagem de contratos distintos por técnico) ----
+  // ---- Detecta o "mês vigente" a partir do próprio Consolidado (ano/mês mais frequente) ----
+  const contagemMes = {};
+  crows.forEach(row=>{
+    const d = iDataAgendada!==-1 ? parseDateSafeSite(row[iDataAgendada]) : null;
+    if(d){
+      const chave = d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
+      contagemMes[chave] = (contagemMes[chave]||0) + 1;
+    }
+  });
+  let mesVigente = null;
+  let maiorContagem = 0;
+  Object.keys(contagemMes).forEach(chave=>{
+    if(contagemMes[chave] > maiorContagem){ maiorContagem = contagemMes[chave]; mesVigente = chave; }
+  });
+
+  // ---- CQ (contagem de contratos distintos por técnico, só do mês vigente) ----
   let cqPorTecnico = {};
-  if(cqRows && cqRows.length > 1){
+  if(cqRows && cqRows.length > 0){
     const contratosPorTec = {};
-    cqRows.slice(1).forEach(row=>{
+    // Só pula a primeira linha se ela realmente parecer um cabeçalho (coluna A não é um número de contrato)
+    let start = 0;
+    if(cqRows.length > 0){
+      const primeiraColA = String(cqRows[0][0] || '').trim();
+      const pareceContrato = /^\d+$/.test(primeiraColA);
+      if(!pareceContrato) start = 1;
+    }
+    for(let i = start; i < cqRows.length; i++){
+      const row = cqRows[i];
       const nome = String(row[3]||'').trim();
       const contrato = String(row[0]||'').trim();
-      if(!nome || !isRealTecnicoSite(nome) || !contrato) return;
+      if(!nome || !isRealTecnicoSite(nome) || !contrato) continue;
+      // Filtra pelo mês vigente (coluna C = DATA), se conseguirmos identificar o mês
+      if(mesVigente){
+        const dataCQ = parseDateSafeSite(row[2]);
+        if(!dataCQ) continue;
+        const chaveCQ = dataCQ.getFullYear()+'-'+String(dataCQ.getMonth()+1).padStart(2,'0');
+        if(chaveCQ !== mesVigente) continue;
+      }
       if(!contratosPorTec[nome]) contratosPorTec[nome] = new Set();
       contratosPorTec[nome].add(contrato);
-    });
+    }
     Object.keys(contratosPorTec).forEach(nome=>{ cqPorTecnico[nome] = contratosPorTec[nome].size; });
   }
 
@@ -3095,7 +3125,7 @@ async function handleSeedHistorico(file){
       const solucaoFalha = iSolucaoFalha!==-1 ? String(row[iSolucaoFalha]||'').trim() : '';
       const dataProtocolo = iDataProtocolo!==-1 ? parseDateSafeSite(row[iDataProtocolo]) : null;
       const dataAgendada = iDataAgendada!==-1 ? parseDateSafeSite(row[iDataAgendada]) : null;
-      const dataRef = dataProtocolo || dataAgendada;
+      const dataRef = dataAgendada || dataProtocolo;
       if(!dataRef) return;
       novasAtividades.push({ contrato, tecnico: nome, tipo, data: dataRef.toISOString(), solucaoFalha });
     });
