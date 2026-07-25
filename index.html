@@ -1382,7 +1382,7 @@ function buildManualRevisitaMap(rows){
   }
   for(let i=start; i<rows.length; i++){
     const nome = String(rows[i][0]||'').trim();
-    const pct = parsePercentTextSite(rows[i][1]);
+    const pct = parsePercentTextSite(rows[i][3]); // coluna D: "% Ativações C/ Retorno" ou "% Reparo C/ Retorno"
     if(nome && pct!==null) mapa[nome] = pct;
   }
   return mapa;
