@@ -373,12 +373,17 @@
         <p class="subtitle">Desempenho por gestor e por técnico — visão completa de todas as equipes.</p>
       </div>
       <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-        <button class="logout-btn" id="admin-import-btn" title="Importar Consolidado direto do computador" style="color:var(--accent);border-color:var(--accent);">📥 Importar Consolidado</button>
-        <input type="file" id="admin-import-file-input" accept=".csv,.xlsx,.xls" style="display:none;">
-        <button class="logout-btn" id="admin-seed-historico-btn" title="Alimenta o histórico de revisitas com um mês anterior, sem mexer nos indicadores atuais">📅 Alimentar Histórico (mês anterior)</button>
-        <input type="file" id="admin-seed-historico-file-input" accept=".csv,.xlsx,.xls" style="display:none;">
+        <div style="position:relative;">
+          <button class="logout-btn" id="admin-menu-toggle" title="Mais ações">☰ Menu</button>
+          <div id="admin-menu-panel" style="display:none;position:absolute;top:calc(100% + 6px);left:0;background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:10px;min-width:250px;z-index:80;box-shadow:0 12px 30px rgba(0,0,0,0.4);">
+            <button class="logout-btn" id="admin-import-btn" title="Importar Consolidado direto do computador" style="color:var(--accent);border-color:var(--accent);width:100%;justify-content:flex-start;margin-bottom:8px;">📥 Importar Consolidado</button>
+            <input type="file" id="admin-import-file-input" accept=".csv,.xlsx,.xls" style="display:none;">
+            <button class="logout-btn" id="admin-seed-historico-btn" title="Alimenta o histórico de revisitas com um mês anterior, sem mexer nos indicadores atuais" style="width:100%;justify-content:flex-start;margin-bottom:8px;">📅 Alimentar Histórico (mês anterior)</button>
+            <input type="file" id="admin-seed-historico-file-input" accept=".csv,.xlsx,.xls" style="display:none;">
+            <button class="logout-btn" id="admin-toggle-valores-btn" title="Liberar/bloquear o card de valores para os técnicos" style="width:100%;justify-content:flex-start;">💰 Valores: carregando...</button>
+          </div>
+        </div>
         <button class="logout-btn" id="admin-refresh-btn" title="Buscar dados mais recentes">↻ Atualizar</button>
-        <button class="logout-btn" id="admin-toggle-valores-btn" title="Liberar/bloquear o card de valores para os técnicos">💰 Valores: carregando...</button>
         <button class="logout-btn" id="admin-logout-btn">Sair</button>
       </div>
     </header>
@@ -403,6 +408,42 @@
       </div>
     </section>
 
+
+    <section id="admin-detail-panel">
+      <div class="backbar">
+        <button class="back-btn" id="admin-back-btn">&larr; Voltar para gestores</button>
+        <div class="gestor-chip"><span class="swatch" id="admin-chip-swatch"></span><span id="admin-chip-name"></span><span class="n" id="admin-chip-count"></span></div>
+      </div>
+
+      <div class="team-strip" id="admin-team-strip"></div>
+
+      <div class="metric-toolbar">
+        <div>
+          <label for="admin-metric-select" style="font-size:12px;color:var(--text-mute);margin-right:8px;display:inline;text-transform:none;">Métrica do gráfico</label>
+          <div class="msel" id="admin-metric-select"></div>
+        </div>
+        <div class="legend-line">
+          <span><i style="background:var(--good)"></i> Acima/na meta</span>
+          <span><i style="background:var(--warn)"></i> Próximo da meta</span>
+          <span><i style="background:var(--crit)"></i> Abaixo da meta</span>
+        </div>
+      </div>
+
+      <div class="chart-card detail-chart"><div class="chart-scroll-inner"><canvas id="admin-tech-chart"></canvas></div></div>
+
+      <div class="table-scroll">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:4px 6px 12px;">
+          <p style="font-size:12px;color:var(--text-mute);margin:0;">Clique em um técnico para ver todos os indicadores e o volume de cada atividade realizada.</p>
+          <div class="field-wrap" style="max-width:260px;flex:1;min-width:200px;">
+            <input type="text" id="admin-tech-search" placeholder="Buscar técnico..." style="padding:8px 12px;font-size:13px;">
+          </div>
+        </div>
+        <table class="tech-table" id="admin-tech-table">
+          <thead><tr id="admin-tech-thead-row"></tr></thead>
+          <tbody id="admin-tech-tbody"></tbody>
+        </table>
+      </div>
+    </section>
     <section id="areas-panel" class="card" style="margin-bottom:32px;">
       <button type="button" id="areas-panel-toggle" style="width:100%;background:none;border:none;padding:0;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:12px;text-align:left;color:var(--text);font:inherit;-webkit-appearance:none;appearance:none;">
         <div class="section-title" style="margin:0;flex:1;">
@@ -496,42 +537,6 @@
             <div id="master-pw-msg"></div>
           </div>
         </div>
-      </div>
-    </section>
-
-    <section id="admin-detail-panel">
-      <div class="backbar">
-        <button class="back-btn" id="admin-back-btn">&larr; Voltar para gestores</button>
-        <div class="gestor-chip"><span class="swatch" id="admin-chip-swatch"></span><span id="admin-chip-name"></span><span class="n" id="admin-chip-count"></span></div>
-      </div>
-
-      <div class="team-strip" id="admin-team-strip"></div>
-
-      <div class="metric-toolbar">
-        <div>
-          <label for="admin-metric-select" style="font-size:12px;color:var(--text-mute);margin-right:8px;display:inline;text-transform:none;">Métrica do gráfico</label>
-          <div class="msel" id="admin-metric-select"></div>
-        </div>
-        <div class="legend-line">
-          <span><i style="background:var(--good)"></i> Acima/na meta</span>
-          <span><i style="background:var(--warn)"></i> Próximo da meta</span>
-          <span><i style="background:var(--crit)"></i> Abaixo da meta</span>
-        </div>
-      </div>
-
-      <div class="chart-card detail-chart"><div class="chart-scroll-inner"><canvas id="admin-tech-chart"></canvas></div></div>
-
-      <div class="table-scroll">
-        <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:4px 6px 12px;">
-          <p style="font-size:12px;color:var(--text-mute);margin:0;">Clique em um técnico para ver todos os indicadores e o volume de cada atividade realizada.</p>
-          <div class="field-wrap" style="max-width:260px;flex:1;min-width:200px;">
-            <input type="text" id="admin-tech-search" placeholder="Buscar técnico..." style="padding:8px 12px;font-size:13px;">
-          </div>
-        </div>
-        <table class="tech-table" id="admin-tech-table">
-          <thead><tr id="admin-tech-thead-row"></tr></thead>
-          <tbody id="admin-tech-tbody"></tbody>
-        </table>
       </div>
     </section>
 
@@ -1127,10 +1132,6 @@ const RODIZIO_DATA_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR4mE5
 /* ---- Fontes de dados BRUTOS (Consolidado, CQ, Líder) — o site calcula tudo sozinho a partir daqui ---- */
 const RAW_CONSOLIDADO_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR4mE54QysVssxQ-krzAPVA9fCCmPs4QigvpxAwS6P5bl3oDuKnUdZRBu0vQ-ypcCCJ2EHk-iNd303j/pub?gid=1409951506&single=true&output=csv";
 const RAW_CQ_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR4mE54QysVssxQ-krzAPVA9fCCmPs4QigvpxAwS6P5bl3oDuKnUdZRBu0vQ-ypcCCJ2EHk-iNd303j/pub?gid=1403067051&single=true&output=csv";
-// TODO: trocar pelos links reais assim que forem publicados
-const RAW_REVISITA_ATIVACAO_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR4mE54QysVssxQ-krzAPVA9fCCmPs4QigvpxAwS6P5bl3oDuKnUdZRBu0vQ-ypcCCJ2EHk-iNd303j/pub?gid=0&single=true&output=csv";
-const RAW_REVISITA_REPARO_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR4mE54QysVssxQ-krzAPVA9fCCmPs4QigvpxAwS6P5bl3oDuKnUdZRBu0vQ-ypcCCJ2EHk-iNd303j/pub?gid=746440460&single=true&output=csv";
-const RAW_LIDER_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR4mE54QysVssxQ-krzAPVA9fCCmPs4QigvpxAwS6P5bl3oDuKnUdZRBu0vQ-ypcCCJ2EHk-iNd303j/pub?gid=831107252&single=true&output=csv";
 const NPS_FIXO_SITE = 0.70;
 
 /* ---- Mapa embutido de técnico -> gestor (camada de segurança, caso o arquivo/Sheets falhe) ----
@@ -1365,28 +1366,6 @@ function parseDateSafeSite(v){
   const d2 = new Date(s);
   return isNaN(d2) ? null : d2;
 }
-function parsePercentTextSite(v){
-  if(v===null||v===undefined||v==='') return null;
-  const s = String(v).trim().replace('%','').replace(',','.');
-  const num = parseFloat(s);
-  if(isNaN(num)) return null;
-  return num/100;
-}
-function buildManualRevisitaMap(rows){
-  const mapa = {};
-  if(!rows || rows.length===0) return mapa;
-  let start = 0;
-  const maybeHeader = rows[0].map(c=>String(c).trim().toUpperCase());
-  if(maybeHeader[0] && (maybeHeader[0].includes('TÉCNICO') || maybeHeader[0].includes('TECNICO') || maybeHeader[0]==='RECURSO')){
-    start = 1;
-  }
-  for(let i=start; i<rows.length; i++){
-    const nome = String(rows[i][0]||'').trim();
-    const pct = parsePercentTextSite(rows[i][3]); // coluna D: "% Ativações C/ Retorno" ou "% Reparo C/ Retorno"
-    if(nome && pct!==null) mapa[nome] = pct;
-  }
-  return mapa;
-}
 function parseTimeMinutesSite(v){
   if(v===null || v===undefined || v==='') return null;
   const s = String(v).trim();
@@ -1519,12 +1498,12 @@ function computeIndicatorsFromRaw(consolidadoRows, cqRows, liderRows, historicoE
   Object.keys(porContratoGeral).forEach(contrato=>{
     const atividades = porContratoGeral[contrato].slice().sort((a,b)=>a.data-b.data);
     atividades.forEach((ativ, idx)=>{
-      // Janela de 15 dias: Ativação e Ativação Corporativo
-      if(ativ.tipo==='Ativação' || ativ.tipo==='Ativação Corporativo'){
-        const revisita = atividades.find((outra,j)=> j!==idx && outra.data>ativ.data && diffDaysSite(ativ.data,outra.data)<=15);
-        if(revisita){
-          const t = porTecnico[ativ.tecnico];
-          if(t){
+      // Janela de 15 dias: Ativação, Ativação Corporativo, Remanejamento Externo e Remanejamento Interno
+      if(ativ.tipo==='Ativação' || ativ.tipo==='Ativação Corporativo' || ativ.tipo==='Remanejamento Externo' || ativ.tipo==='Remanejamento Interno'){
+        const revisitas = atividades.filter((outra,j)=> j!==idx && outra.data>ativ.data && diffDaysSite(ativ.data,outra.data)<=15);
+        const t = porTecnico[ativ.tecnico];
+        if(t){
+          revisitas.forEach(revisita=>{
             t.revisitaAtivacaoCount++;
             t.revisitasAtivacaoDetalhes.push({
               contrato,
@@ -1532,15 +1511,15 @@ function computeIndicatorsFromRaw(consolidadoRows, cqRows, liderRows, historicoE
               dataRevisita: revisita.data.toISOString(),
               solucaoFalha: revisita.solucaoFalha || '(sem solução registrada)'
             });
-          }
+          });
         }
       }
-      // Janela de 30 dias: Reparo, Remanejamento Externo e Remanejamento Interno
-      if(ativ.tipo==='Reparo' || ativ.tipo==='Remanejamento Externo' || ativ.tipo==='Remanejamento Interno'){
-        const revisita = atividades.find((outra,j)=> j!==idx && outra.data>ativ.data && diffDaysSite(ativ.data,outra.data)<=30);
-        if(revisita){
-          const t = porTecnico[ativ.tecnico];
-          if(t){
+      // Janela de 30 dias: só Reparo
+      if(ativ.tipo==='Reparo'){
+        const revisitas = atividades.filter((outra,j)=> j!==idx && outra.data>ativ.data && diffDaysSite(ativ.data,outra.data)<=30);
+        const t = porTecnico[ativ.tecnico];
+        if(t){
+          revisitas.forEach(revisita=>{
             t.revisitaReparoCount++;
             t.revisitasReparoDetalhes.push({
               contrato,
@@ -1548,7 +1527,7 @@ function computeIndicatorsFromRaw(consolidadoRows, cqRows, liderRows, historicoE
               dataRevisita: revisita.data.toISOString(),
               solucaoFalha: revisita.solucaoFalha || '(sem solução registrada)'
             });
-          }
+          });
         }
       }
     });
@@ -1595,8 +1574,8 @@ function computeIndicatorsFromRaw(consolidadoRows, cqRows, liderRows, historicoE
       woMin = horarios.reduce((a,b)=>a+b,0)/horarios.length;
     }
 
-    const baseAtivacao = t.ativacao + t.ativacaoCorp;
-    const baseReparo = t.reparo + t.remExt + t.remInt;
+    const baseAtivacao = t.ativacao + t.ativacaoCorp + t.remExt + t.remInt;
+    const baseReparo = t.reparo;
     const revAtiv = baseAtivacao>0 ? t.revisitaAtivacaoCount/baseAtivacao : null;
     const revRep = baseReparo>0 ? t.revisitaReparoCount/baseReparo : null;
 
@@ -1646,42 +1625,6 @@ function computeIndicatorsFromRaw(consolidadoRows, cqRows, liderRows, historicoE
   });
 
   return { tecnicos, atividadesParaHistorico };
-}
-
-async function tryLoadRawAndCompute(){
-  try{
-    const [consolidadoRes, cqRes, liderRes] = await Promise.all([
-      fetch(RAW_CONSOLIDADO_URL, {cache:'no-store'}),
-      fetch(RAW_CQ_URL, {cache:'no-store'}).catch(()=>null),
-      fetch(RAW_LIDER_URL, {cache:'no-store'}).catch(()=>null)
-    ]);
-    if(!consolidadoRes.ok) throw new Error('HTTP '+consolidadoRes.status+' ao buscar Consolidado');
-    const consolidadoText = await consolidadoRes.text();
-    const cqText = (cqRes && cqRes.ok) ? await cqRes.text() : '';
-    const liderText = (liderRes && liderRes.ok) ? await liderRes.text() : '';
-
-    const consolidadoRows = parseCSV(consolidadoText);
-    const cqRows = cqText ? parseCSV(cqText) : [];
-    let liderRows = liderText ? parseCSV(liderText) : [];
-    if(liderRows.length > 0){
-      const maybeHeader = liderRows[0].map(c=>String(c).trim().toUpperCase());
-      if(maybeHeader[0] && (maybeHeader[0].includes('TÉCNICO') || maybeHeader[0].includes('TECNICO') || maybeHeader[0]==='NOME')){
-        liderRows = liderRows.slice(1);
-      }
-    }
-
-    const resultado = computeIndicatorsFromRaw(consolidadoRows, cqRows, liderRows);
-    const tecnicosCalculados = resultado ? resultado.tecnicos : null;
-    if(!tecnicosCalculados || tecnicosCalculados.length===0) throw new Error('Nenhum técnico processado a partir dos dados brutos.');
-
-    applyTecnicosData(tecnicosCalculados);
-    const banner = document.getElementById('live-data-status');
-    if(banner) banner.textContent = 'Dados calculados ao vivo a partir do Consolidado.';
-    return true;
-  }catch(e){
-    console.warn('Não foi possível calcular a partir dos dados brutos, usando versão local salva:', e);
-    return false;
-  }
 }
 
 async function tryLoadLiveData(){
@@ -2129,6 +2072,15 @@ document.getElementById('admin-login-btn').addEventListener('click', async ()=>{
   }
 });
 
+/* Proteção de segurança: se a página for restaurada pelo "cache de navegação" do
+   navegador (ex: botão Voltar, aba suspensa), força um recarregamento completo em
+   vez de mostrar a tela anterior (que poderia ser de outro usuário logado antes). */
+window.addEventListener('pageshow', (event)=>{
+  if(event.persisted){
+    location.reload();
+  }
+});
+
 document.getElementById('admin-logout-btn').addEventListener('click', ()=>{
   location.reload();
 });
@@ -2291,6 +2243,20 @@ document.addEventListener('click', (e)=>{
   }
 });
 
+const adminMenuToggle = document.getElementById('admin-menu-toggle');
+const adminMenuPanel = document.getElementById('admin-menu-panel');
+if(adminMenuToggle && adminMenuPanel){
+  adminMenuToggle.addEventListener('click', (e)=>{
+    e.stopPropagation();
+    adminMenuPanel.style.display = adminMenuPanel.style.display === 'none' ? 'block' : 'none';
+  });
+  document.addEventListener('click', (e)=>{
+    if(!e.target.closest('#admin-menu-panel') && !e.target.closest('#admin-menu-toggle')){
+      adminMenuPanel.style.display = 'none';
+    }
+  });
+}
+
 function openAdminDetail(gestor){
   currentAdminGestor = gestor;
   adminExpandedTechKey = null;
@@ -2413,26 +2379,14 @@ function adminTechDetailHTML(t){
     const s = indStatus(val, d);
     const ratio = indRatio(val, d);
     let detalhesHTML = '';
-    let comparacaoHTML = '';
-    if(d.key === 'revisita_ativacao'){
-      detalhesHTML = revisitaDetalhesHTML(t.revisitasAtivacaoDetalhes, 'revisita-ativ-'+t.slug);
-      if(t.revisita_ativacao_auto !== undefined && t.revisita_ativacao_auto !== null){
-        comparacaoHTML = `<div style="font-size:11px;color:var(--text-mute);margin:-4px 0 8px;">Cálculo automático (comparação): ${fmtPct(t.revisita_ativacao_auto)}</div>`;
-      }
-    }
-    if(d.key === 'revisita_reparo'){
-      detalhesHTML = revisitaDetalhesHTML(t.revisitasReparoDetalhes, 'revisita-rep-'+t.slug);
-      if(t.revisita_reparo_auto !== undefined && t.revisita_reparo_auto !== null){
-        comparacaoHTML = `<div style="font-size:11px;color:var(--text-mute);margin:-4px 0 8px;">Cálculo automático (comparação): ${fmtPct(t.revisita_reparo_auto)}</div>`;
-      }
-    }
+    if(d.key === 'revisita_ativacao') detalhesHTML = revisitaDetalhesHTML(t.revisitasAtivacaoDetalhes, 'revisita-ativ-'+t.slug);
+    if(d.key === 'revisita_reparo') detalhesHTML = revisitaDetalhesHTML(t.revisitasReparoDetalhes, 'revisita-rep-'+t.slug);
     return `
       <div class="ind-row">
         <span class="iname">${d.label}</span>
         <span class="ival">${d.fmt(val)} <span class="meta-note">/ meta ${metaLabel(d)}</span>${s?`<span class="status-dot ${s}"></span>`:''}</span>
       </div>
       <div class="ind-bar-track"><div class="ind-bar-fill ${s||''}" style="width:${(ratio*100).toFixed(0)}%"></div></div>
-      ${comparacaoHTML}
       ${detalhesHTML}
     `;
   }).join('');
@@ -2659,6 +2613,8 @@ function enterGestorDashboard(gestor){
   const gestorSearchInput = document.getElementById('gestor-tech-search');
   if(gestorSearchInput) gestorSearchInput.value = '';
   document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('admin-dashboard').style.display = 'none';
+  document.getElementById('dashboard').style.display = 'none';
   document.getElementById('gestor-dashboard').style.display = 'block';
   document.getElementById('gestor-dash-title').textContent = 'Equipe de ' + (gestor.charAt(0)+gestor.slice(1).toLowerCase());
   document.getElementById('gestor-dash-subtitle').textContent = `Indicadores da sua equipe no período — ${gestores[gestor].length} técnicos.`;
@@ -2981,7 +2937,7 @@ async function parseUploadedConsolidadoFile(file){
   const isCsv = /\.csv$/i.test(file.name);
   if(isCsv){
     const text = await file.text();
-    return { consolidadoRows: parseCSV(text), liderRowsFromFile: null };
+    return { consolidadoRows: parseCSV(text) };
   }
   const buffer = await file.arrayBuffer();
   const workbook = XLSX.read(buffer, {type:'array', cellDates:false});
@@ -2991,9 +2947,7 @@ async function parseUploadedConsolidadoFile(file){
     const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
     rows = XLSX.utils.sheet_to_json(firstSheet, {header:1, raw:false, defval:''});
   }
-  // Procura também uma aba de Líder (LÍDER, LIDER, LÍDERES...) dentro do MESMO arquivo
-  const liderRowsFromFile = findSheetRowsByNamePattern(workbook, /L[IÍ]DER/i);
-  return { consolidadoRows: rows, liderRowsFromFile };
+  return { consolidadoRows: rows };
 }
 
 async function fetchCsvRows(url){
@@ -3023,7 +2977,7 @@ async function handleImportConsolidado(file){
   btn.textContent = '📥 Lendo arquivo...';
   if(statusEl) statusEl.textContent = '';
   try{
-    const { consolidadoRows, liderRowsFromFile } = await parseUploadedConsolidadoFile(file);
+    const { consolidadoRows } = await parseUploadedConsolidadoFile(file);
     if(!consolidadoRows || consolidadoRows.length < 2){
       throw new Error('Não encontrei dados reconhecíveis nesse arquivo.');
     }
@@ -3031,33 +2985,16 @@ async function handleImportConsolidado(file){
     btn.textContent = '📥 Buscando CQ...';
     const cqRows = await fetchCsvRowsComRetry(RAW_CQ_URL);
 
-    let liderRows = liderRowsFromFile;
-    let liderVeioDoArquivo = !!(liderRows && liderRows.length > 0);
-    if(!liderVeioDoArquivo){
-      btn.textContent = '📥 Buscando Líder...';
-      liderRows = await fetchCsvRowsComRetry(RAW_LIDER_URL);
-    }
-    if(liderRows && liderRows.length > 0){
-      const maybeHeader = liderRows[0].map(c=>String(c).trim().toUpperCase());
-      if(maybeHeader[0] && (maybeHeader[0].includes('TÉCNICO') || maybeHeader[0].includes('TECNICO') || maybeHeader[0]==='NOME' || maybeHeader[0].includes('RECURSO'))){
-        liderRows = liderRows.slice(1);
-      }
-    }
+    // Gestor de cada técnico vem só de duas fontes: ajuste manual no site
+    // (painel "Ajustar Gestor dos Técnicos") e o mapa embutido no código.
+    // Não busca mais aba de Líder no arquivo nem no Google Sheets.
+    const liderRows = [];
 
     btn.textContent = '📥 Buscando histórico de revisitas...';
     const historicoExtra = await loadRevisitaHistorico();
 
-    btn.textContent = '📥 Buscando revisita ativação (manual)...';
-    const revisitaAtivRows = RAW_REVISITA_ATIVACAO_URL ? await fetchCsvRowsComRetry(RAW_REVISITA_ATIVACAO_URL) : [];
-    btn.textContent = '📥 Buscando revisita reparo (manual)...';
-    const revisitaRepRows = RAW_REVISITA_REPARO_URL ? await fetchCsvRowsComRetry(RAW_REVISITA_REPARO_URL) : [];
-    const mapaRevisitaAtiv = buildManualRevisitaMap(revisitaAtivRows);
-    const mapaRevisitaRep = buildManualRevisitaMap(revisitaRepRows);
-
     const avisos = [];
     if(cqRows.length === 0) avisos.push('não consegui buscar os dados de CQ (CQ pode ficar zerado) — tente importar de novo em alguns instantes');
-    if(RAW_REVISITA_ATIVACAO_URL && Object.keys(mapaRevisitaAtiv).length === 0) avisos.push('não consegui buscar a planilha de Revisita Ativação');
-    if(RAW_REVISITA_REPARO_URL && Object.keys(mapaRevisitaRep).length === 0) avisos.push('não consegui buscar a planilha de Revisita Reparo');
 
     btn.textContent = '📥 Calculando indicadores...';
     const resultado = computeIndicatorsFromRaw(consolidadoRows, cqRows, liderRows, historicoExtra);
@@ -3065,19 +3002,6 @@ async function handleImportConsolidado(file){
     if(!tecnicosCalculados || tecnicosCalculados.length === 0){
       throw new Error('Nenhum técnico processado. Confira se o arquivo tem as colunas esperadas (Recurso, Status da Atividade, Tipo de Atividade, etc.).');
     }
-
-    // Sobrescreve a revisita calculada automaticamente pelo valor manual da planilha (quando disponível),
-    // mas guarda o valor automático à parte, pra dar pra comparar os dois na tela.
-    tecnicosCalculados.forEach(t=>{
-      if(mapaRevisitaAtiv.hasOwnProperty(t.nome)){
-        t.revisita_ativacao_auto = t.revisita_ativacao;
-        t.revisita_ativacao = mapaRevisitaAtiv[t.nome];
-      }
-      if(mapaRevisitaRep.hasOwnProperty(t.nome)){
-        t.revisita_reparo_auto = t.revisita_reparo;
-        t.revisita_reparo = mapaRevisitaRep[t.nome];
-      }
-    });
 
     btn.textContent = '📥 Salvando...';
     await saveComputedIndicators(tecnicosCalculados);
@@ -3164,7 +3088,8 @@ async function handleSeedHistorico(file){
       const status = String(row[iStatus]||'').trim();
       if(status !== 'Concluída') return;
       const tipo = String(row[iTipoAtividade]||'').trim();
-      if(tipo !== 'Ativação' && tipo !== 'Reparo') return;
+      const tiposRelevantes = ['Ativação', 'Ativação Corporativo', 'Remanejamento Externo', 'Remanejamento Interno', 'Reparo'];
+      if(tiposRelevantes.indexOf(tipo) === -1) return;
       const contrato = iContrato!==-1 ? String(row[iContrato]||'').trim() : '';
       if(!contrato) return;
       const solucaoFalha = iSolucaoFalha!==-1 ? String(row[iSolucaoFalha]||'').trim() : '';
@@ -3224,6 +3149,8 @@ document.getElementById('admin-seed-historico-file-input').addEventListener('cha
 function enterAdmin(){
   isViewerMode = false;
   document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('dashboard').style.display = 'none';
+  document.getElementById('gestor-dashboard').style.display = 'none';
   document.getElementById('admin-dashboard').style.display = 'block';
   document.getElementById('admin-access-panel').style.display = '';
   const toggleBtn = document.getElementById('admin-toggle-valores-btn');
@@ -3248,6 +3175,8 @@ function enterAdmin(){
 function enterViewer(name){
   isViewerMode = true;
   document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('dashboard').style.display = 'none';
+  document.getElementById('gestor-dashboard').style.display = 'none';
   document.getElementById('admin-dashboard').style.display = 'block';
   document.getElementById('admin-access-panel').style.display = 'none';
   const toggleBtn = document.getElementById('admin-toggle-valores-btn');
@@ -3611,6 +3540,8 @@ let compareChart;
 function enterDashboard(t){
   currentLoggedTech = t;
   document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('admin-dashboard').style.display = 'none';
+  document.getElementById('gestor-dashboard').style.display = 'none';
   document.getElementById('dashboard').style.display = 'block';
 
   const valorCard = document.getElementById('valor-card');
@@ -3642,26 +3573,14 @@ function enterDashboard(t){
     const s = indStatus(val, d);
     const ratio = indRatio(val, d);
     let detalhesHTML = '';
-    let comparacaoHTML = '';
-    if(d.key === 'revisita_ativacao'){
-      detalhesHTML = revisitaDetalhesHTML(t.revisitasAtivacaoDetalhes, 'revisita-ativ-'+t.slug);
-      if(t.revisita_ativacao_auto !== undefined && t.revisita_ativacao_auto !== null){
-        comparacaoHTML = `<div style="font-size:11px;color:var(--text-mute);margin:-4px 0 8px;">Cálculo automático (comparação): ${fmtPct(t.revisita_ativacao_auto)}</div>`;
-      }
-    }
-    if(d.key === 'revisita_reparo'){
-      detalhesHTML = revisitaDetalhesHTML(t.revisitasReparoDetalhes, 'revisita-rep-'+t.slug);
-      if(t.revisita_reparo_auto !== undefined && t.revisita_reparo_auto !== null){
-        comparacaoHTML = `<div style="font-size:11px;color:var(--text-mute);margin:-4px 0 8px;">Cálculo automático (comparação): ${fmtPct(t.revisita_reparo_auto)}</div>`;
-      }
-    }
+    if(d.key === 'revisita_ativacao') detalhesHTML = revisitaDetalhesHTML(t.revisitasAtivacaoDetalhes, 'revisita-ativ-'+t.slug);
+    if(d.key === 'revisita_reparo') detalhesHTML = revisitaDetalhesHTML(t.revisitasReparoDetalhes, 'revisita-rep-'+t.slug);
     return `
       <div class="ind-row">
         <span class="iname">${d.label}</span>
         <span class="ival">${d.fmt(val)} <span class="meta-note">/ meta ${metaLabel(d)}</span>${s?`<span class="status-dot ${s}"></span>`:''}</span>
       </div>
       <div class="ind-bar-track"><div class="ind-bar-fill ${s||''}" style="width:${(ratio*100).toFixed(0)}%"></div></div>
-      ${comparacaoHTML}
       ${detalhesHTML}
     `;
   }).join('');
